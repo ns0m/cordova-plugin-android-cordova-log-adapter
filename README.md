@@ -10,7 +10,7 @@ The plugin uses a hook script to replace any `android.util.Log` references:
 
 # Requirements
 
-This plugin requires a minimum of [`cordova@8`](https://github.com/apache/cordova-cli) and [`cordova-android@8`](https://github.com/apache/cordova-android).
+This plugin requires a minimum of [`cordova-android@6`](https://github.com/apache/cordova-android).
  
 # Installation
 
