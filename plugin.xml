@@ -2,7 +2,7 @@
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android"
         id="cordova-plugin-android-cordova-log-adapter"
-        version="1.0.0">
+        version="1.0.0-dev">
 
     <name>cordova-plugin-android-cordova-log-adapter</name>
     <description>Cordova/Phonegap plugin to migrate any code which uses android.util.Log to org.apache.cordova.LOG in a Cordova Android platform project.</description>
