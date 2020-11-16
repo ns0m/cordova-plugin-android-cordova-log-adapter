@@ -1,4 +1,4 @@
-cordova-plugin-android-cordova-log-adapter
+cordova-plugin-android-cordova-log-adapter [![Latest Published Version](https://img.shields.io/npm/v/cordova-plugin-android-cordova-log-adapter)](https://www.npmjs.com/package/cordova-plugin-android-cordova-log-adapter)
 ===============================
 
 If your Cordova project contains plugins/libraries which reference both `android.util.Log` and `org.apache.cordova.LOG`, only the second one will integrate well with the [Cordova Android platform logging system](https://github.com/apache/cordova-android/blob/master/framework/src/org/apache/cordova/LOG.java).
