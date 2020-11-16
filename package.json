@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-android-cordova-log-adapter",
-  "version": "1.0.0-dev",
+  "version": "1.0.0",
   "description": "Cordova/Phonegap plugin to migrate any code which uses android.util.Log to org.apache.cordova.LOG in a Cordova Android platform project.",
   "license": "MIT",
   "repository": "github:ns0m/cordova-plugin-android-cordova-log-adapter",
