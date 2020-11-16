@@ -1,11 +1,15 @@
 var PLUGIN_NAME = 'cordova-plugin-android-cordova-log-adapter';
-var ARTIFACT_MAPPINGS_FILE = 'artifact-mappings.json';
-var CLASS_MAPPINGS_FILE = 'class-mappings.json';
 var SRC_PATH = './platforms/android/app/src/main';
-var BUILD_GRADLE_PATH = './platforms/android/app/build.gradle';
-var PROJECT_PROPERTIES_PATH = './platforms/android/project.properties';
-var MANIFEST_PATH = './platforms/android/app/src/main/AndroidManifest.xml';
-var TARGET_FILE_REGEX = /(\.java|\.xml)/;
+var TARGET_FILE_REGEX = /\.java/;
+
+var LOG_MAPPINGS = {
+    'android.util.Log': 'org.apache.cordova.LOG',
+    'Log.v': 'LOG.v',
+    'Log.d': 'LOG.d',
+    'Log.i': 'LOG.i',
+    'Log.w': 'LOG.w',
+    'Log.e': 'LOG.e'
+};
 
 var deferred, fs, path, perf_hooks, recursiveDir;
 
@@ -30,29 +34,7 @@ function run() {
 
     var startTime = perf_hooks.performance.now();
 
-    var artifactMappings = JSON.parse(fs.readFileSync(path.join(__dirname, '.', ARTIFACT_MAPPINGS_FILE)).toString()),
-        buildGradle = fs.readFileSync(BUILD_GRADLE_PATH).toString(),
-        projectProperties = fs.readFileSync(PROJECT_PROPERTIES_PATH).toString(),
-        androidManifest = fs.readFileSync(MANIFEST_PATH).toString();
-
-    // Replace artifacts in build.gradle, project.properties & AndroidManifest.xml
-    for (var oldArtifactName in artifactMappings) {
-        var newArtifactName = artifactMappings[oldArtifactName];
-        buildGradle = replaceArtifact(buildGradle, oldArtifactName, newArtifactName);
-        projectProperties = replaceArtifact(projectProperties, oldArtifactName, newArtifactName);
-    }
-    fs.writeFileSync(BUILD_GRADLE_PATH, buildGradle, 'utf8');
-    fs.writeFileSync(PROJECT_PROPERTIES_PATH, projectProperties, 'utf8');
-
-    var classMappings = JSON.parse(fs.readFileSync(path.join(__dirname, '.', CLASS_MAPPINGS_FILE)).toString());
-
-    // Replace class/package names in AndroidManifest.xml
-    for (var oldClassName in classMappings) {
-        androidManifest = replaceClassName(androidManifest, oldClassName, classMappings[oldClassName]);
-    }
-    fs.writeFileSync(MANIFEST_PATH, androidManifest, 'utf8');
-
-    // Replace class/package names in source code
+    // Replace class/method names in source code
     recursiveDir(SRC_PATH, [function (file, stats) {
         if (stats.isDirectory()) {
             return false;
@@ -63,23 +45,26 @@ function run() {
 
         for (var filePath of files) {
             var fileContents = fs.readFileSync(filePath).toString();
-            for (var oldClassName in classMappings) {
-                fileContents = replaceClassName(fileContents, oldClassName, classMappings[oldClassName]);
+            if (matchLog(fileContents, Object.keys(LOG_MAPPINGS)[0])) {
+                for (var logMappingKey in LOG_MAPPINGS) {
+                    fileContents = replaceLog(fileContents, logMappingKey, LOG_MAPPINGS[logMappingKey]);
+                }
+                fs.writeFileSync(filePath, fileContents, 'utf8');
             }
-            fs.writeFileSync(filePath, fileContents, 'utf8');
         }
         log('Processed ' + files.length + ' source files in ' + parseInt(perf_hooks.performance.now() - startTime) + 'ms');
         deferred.resolve();
     }));
 }
 
-function replaceArtifact(target, oldName, newName) {
-    return target.replace(new RegExp(sanitiseForRegExp(oldName) + ':[0-9.+]+', 'gm'), newName);
+function matchLog(target, value) {
+    value = '(?:' + sanitiseForRegExp(value) + ')([^a-zA-Z0-9]+)';
+    return target.match(new RegExp(value, 'g'));
 }
 
-function replaceClassName(target, oldName, newName) {
-    oldName = '(?:' + sanitiseForRegExp(oldName) + ')([^a-zA-Z0-9]+)';
-    return target.replace(new RegExp(oldName, 'g'), newName + '$1');
+function replaceLog(target, oldValue, newValue) {
+    oldValue = '(?:' + sanitiseForRegExp(oldValue) + ')([^a-zA-Z0-9]+)';
+    return target.replace(new RegExp(oldValue, 'g'), newValue + '$1');
 }
 
 function sanitiseForRegExp(str) {
